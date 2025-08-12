@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💣 经典扫雷游戏 💎</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            overflow-x: auto;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .game-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        /* 游戏控制面板 */
+        .control-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            min-width: 80px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .mines-count { color: #e74c3c; }
+        .timer { color: #3498db; }
+        .flags-count { color: #f39c12; }
+
+        /* 游戏控制按钮 */
+        .game-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        .control-btn.reset-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            font-size: 1.8rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            padding: 0;
+        }
+
+        .control-btn.pause-btn {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+
+        /* 难度选择 */
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px;
+            border-radius: 25px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .difficulty-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 游戏区域 */
+        .game-area {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .minefield {
+            display: inline-grid;
+            gap: 2px;
+            background: #bdc3c7;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: inset 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .cell:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .cell.revealed {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            cursor: default;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .cell.flagged {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .cell.mine {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            animation: explode 0.5s ease-out;
+        }
+
+        .cell.mine-hit {
+            background: linear-gradient(135deg, #8e44ad 0%, #732d91 100%);
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        /* 数字颜色 */
+        .cell[data-count="1"] { color: #3498db; }
+        .cell[data-count="2"] { color: #27ae60; }
+        .cell[data-count="3"] { color: #e74c3c; }
+        .cell[data-count="4"] { color: #8e44ad; }
+        .cell[data-count="5"] { color: #d35400; }
+        .cell[data-count="6"] { color: #16a085; }
+        .cell[data-count="7"] { color: #2c3e50; }
+        .cell[data-count="8"] { color: #e67e22; }
+
+        /* 动画效果 */
+        @keyframes explode {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes reveal {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .cell.revealing {
+            animation: reveal 0.3s ease-out;
+        }
+
+        @keyframes flag {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .cell.flagging {
+            animation: flag 0.4s ease-out;
+        }
+
+        /* 游戏状态消息 */
+        .game-message {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .game-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .game-message.win {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+        }
+
+        .game-message.lose {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        /* 统计面板 */
+        .stats-panel {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stats-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .stats-item {
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stats-item-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stats-item-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* 暂停遮罩 */
+        .pause-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .pause-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .pause-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .game-title {
+                font-size: 2rem;
+            }
+
+            .control-panel {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .game-stats {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .cell {
+                width: 25px;
+                height: 25px;
+                font-size: 12px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cell {
+                width: 22px;
+                height: 22px;
+                font-size: 11px;
+            }
+
+            .game-stats {
+                gap: 10px;
+            }
+
+            .stat-item {
+                padding: 8px 12px;
+                min-width: 70px;
+            }
+
+            .stat-value {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* 粒子效果 */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            font-size: 1.5rem;
+            z-index: 100;
+        }
+
+        @keyframes particle-float {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.5);
+            }
+        }
+
+        .particle.float {
+            animation: particle-float 1s ease-out forwards;
+        }
+
+        /* 成就提示 */
+        .achievement {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform: translateX(300px);
+            transition: transform 0.3s ease;
+            z-index: 200;
+        }
+
+        .achievement.show {
+            transform: translateX(0);
+        }
+
+        .achievement-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .achievement-desc {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 游戏标题 -->
+        <div class="game-header">
+            <h1 class="game-title">💣 经典扫雷游戏 💎</h1>
+            <p class="game-subtitle">找出所有地雷，但不要踩到它们！</p>
+        </div>
+
+        <!-- 控制面板 -->
+        <div class="control-panel">
+            <!-- 游戏统计 -->
+            <div class="game-stats">
+                <div class="stat-item">
+                    <div class="stat-label">地雷</div>
+                    <div class="stat-value mines-count" id="minesCount">10</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">时间</div>
+                    <div class="stat-value timer" id="timer">000</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">旗帜</div>
+                    <div class="stat-value flags-count" id="flagsCount">0</div>
+                </div>
+            </div>
+
+            <!-- 游戏控制 -->
+            <div class="game-controls">
+                <button class="control-btn reset-btn" id="resetBtn" title="重新开始">😊</button>
+                <button class="control-btn pause-btn" id="pauseBtn">⏸️ 暂停</button>
+            </div>
+
+            <!-- 难度选择 -->
+            <div class="difficulty-selector">
+                <button class="difficulty-btn active" data-difficulty="easy">简单</button>
+                <button class="difficulty-btn" data-difficulty="medium">中等</button>
+                <button class="difficulty-btn" data-difficulty="hard">困难</button>
+                <button class="difficulty-btn" data-difficulty="expert">专家</button>
+            </div>
+        </div>
+
+        <!-- 游戏区域 -->
+        <div class="game-area">
+            <div class="minefield" id="minefield"></div>
+        </div>
+
+        <!-- 游戏消息 -->
+        <div class="game-message" id="gameMessage"></div>
+
+        <!-- 统计面板 -->
+        <div class="stats-panel">
+            <h3 class="stats-title">📊 游戏统计</h3>
+            <div class="stats-grid">
+                <div class="stats-item">
+                    <div class="stats-item-value" id="gamesPlayed">0</div>
+                    <div class="stats-item-label">游戏次数</div>
+                </div>
+                <div class="stats-item">
+                    <div class="stats-item-value" id="gamesWon">0</div>
+                    <div class="stats-item-label">获胜次数</div>
+                </div>
+                <div class="stats-item">
+                    <div class="stats-item-value" id="winRate">0%</div>
+                    <div class="stats-item-label">胜率</div>
+                </div>
+                <div class="stats-item">
+                    <div class="stats-item-value" id="bestTime">---</div>
+                    <div class="stats-item-label">最佳时间</div>
+                </div>
+                <div class="stats-item">
+                    <div class="stats-item-value" id="currentStreak">0</div>
+                    <div class="stats-item-label">连胜</div>
+                </div>
+                <div class="stats-item">
+                    <div class="stats-item-value" id="maxStreak">0</div>
+                    <div class="stats-item-label">最高连胜</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 暂停遮罩 -->
+    <div class="pause-overlay" id="pauseOverlay">
+        <div class="pause-content">
+            <h2 class="pause-title">⏸️ 游戏暂停</h2>
+            <p>点击继续按钮恢复游戏</p>
+            <button class="control-btn" id="resumeBtn">▶️ 继续游戏</button>
+        </div>
+    </div>
+
+    <!-- 成就提示 -->
+    <div class="achievement" id="achievement">
+        <div class="achievement-title" id="achievementTitle">成就解锁！</div>
+        <div class="achievement-desc" id="achievementDesc">首次获胜</div>
+    </div>
+
+    <script src="minesweeper.js"></script>
+</body>
+</html> 
