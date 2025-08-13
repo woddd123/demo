@@ -1,0 +1,32 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /var/www/html
+    overwrite: yes
+permissions:
+  - object: /var/www/html
+    owner: apache
+    group: apache
+    mode: 755
+    type:
+      - directory
+  - object: /var/www/html
+    owner: apache
+    group: apache
+    mode: 644
+    type:
+      - file
+hooks:
+  BeforeInstall:
+    - location: scripts/install_dependencies.sh
+      timeout: 300
+      runas: root
+  ApplicationStart:
+    - location: scripts/start_server.sh
+      timeout: 300
+      runas: root
+  ApplicationStop:
+    - location: scripts/stop_server.sh
+      timeout: 300
+      runas: root
